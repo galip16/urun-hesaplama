@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="tr">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Ürün Hesaplama</title>
+    <style>
+        body {
+            font-family: sans-serif;
+            max-width: 400px;
+            margin: auto;
+            padding: 1rem;
+        }
+
+        h1 {
+            text-align: center;
+        }
+
+        .products {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.8rem;
+        }
+
+        .product {
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 0.5rem;
+            text-align: center;
+            cursor: pointer;
+            font-size: 0.9rem;
+        }
+
+        .product img {
+            max-width: 100%;
+            height: 70px;
+            object-fit: cover;
+            border-radius: 6px;
+        }
+
+        .total {
+            margin-top: 1rem;
+            border: 2px solid #333;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .summary {
+            margin-top: 1rem;
+            font-size: 0.9rem;
+        }
+
+        .item-line {
+            display: flex;
+            justify-content: space-between;
+            margin: 2px 0;
+        }
+
+        button.remove {
+            margin-left: 5px;
+            color: red;
+            cursor: pointer;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="products" id="productList"></div>
+
+    <div class="total">
+        <p>Toplam Ürün: <span id="totalItems">0</span></p>
+        <p><strong>Toplam Ücret: <span id="totalPrice">0</span> TL</strong></p>
+    </div>
+
+    <div class="summary" id="summary"></div>
+
+    <script>
+        const products = [
+            { id: 1, name: "Beze", price: 40, image: "Beze.jpeg" },
+            { id: 2, name: "Gofret", price: 35, image: "Gofret.jpeg" },
+            { id: 3, name: "Kagit Helva", price: 25, image: "KagitHelva.jpeg" },
+            { id: 4, name: "Kütahya Bitli Helva", price: 150, image: "BitliHelva.jpeg" },
+            { id: 5, name: "Koz", price: 30, image: "Koz.jpeg" },
+            { id: 6, name: "Susamli Helva", price: 70, image: "SusamHelva.jpeg" },
+            { id: 7, name: "Susam Krokan", price: 25, image: "SusamliKrokan.jpeg" },
+
+        ];
+
+        const productList = document.getElementById("productList");
+        const totalItemsEl = document.getElementById("totalItems");
+        const totalPriceEl = document.getElementById("totalPrice");
+        const summaryEl = document.getElementById("summary");
+
+        let cart = {};
+
+        function renderSummary() {
+            summaryEl.innerHTML = "";
+            Object.keys(cart).forEach(id => {
+                const item = cart[id];
+                if (item.count > 0) {
+                    const line = document.createElement("div");
+                    line.className = "item-line";
+                    line.innerHTML = `
+            <span>${item.name} x ${item.count}</span>
+            <span>
+              <button onclick="removeOne(${id})" class="remove">-</button>
+            </span>
+          `;
+                    summaryEl.appendChild(line);
+                }
+            });
+        }
+
+        function updateTotals() {
+            let totalItems = 0;
+            let totalPrice = 0;
+            Object.values(cart).forEach(item => {
+                totalItems += item.count;
+                totalPrice += item.count * item.price;
+            });
+            totalItemsEl.textContent = totalItems;
+            totalPriceEl.textContent = totalPrice;
+            renderSummary();
+        }
+
+        function addToCart(p) {
+            if (!cart[p.id]) {
+                cart[p.id] = { ...p, count: 0 };
+            }
+            cart[p.id].count++;
+            updateTotals();
+        }
+
+        window.removeOne = function (id) {
+            if (cart[id] && cart[id].count > 0) {
+                cart[id].count--;
+                updateTotals();
+            }
+        };
+
+        products.forEach(p => {
+            const btn = document.createElement("div");
+            btn.className = "product";
+            btn.innerHTML = `
+        <img src="${p.image}" alt="${p.name}">
+        <div>${p.name}</div>
+        <div>${p.price} TL</div>
+      `;
+            btn.addEventListener("click", () => addToCart(p));
+            productList.appendChild(btn);
+        });
+
+        // Hata olursa cart sıfırlansın
+        window.addEventListener("error", () => {
+            cart = {};
+            updateTotals();
+        });
+    </script>
+</body>
+
+</html>
